@@ -27,13 +27,18 @@ const Guard = async (req: any, res: Response, next: NextFunction) => {
     }
 
     try {
-      const user = await userService.getOne(userData?._id);
+      const user = await userService.getOne({ _id: userData.id });
 
       if (!user) {
-        return clientResponse(res, 401, {
-          success: false,
-          message: "User not found",
-        });
+        return clientResponse(
+          res,
+          401,
+          {
+            success: false,
+            message: "User not found",
+          },
+          true
+        );
       }
 
       // Attach user data to the request for future route handlers
@@ -41,6 +46,7 @@ const Guard = async (req: any, res: Response, next: NextFunction) => {
 
       next(); // Proceed to the protected route
     } catch (error) {
+      console.log(error);
       return clientResponse(res, 501, {
         success: false,
         message: "Internal Server Error",

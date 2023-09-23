@@ -66,6 +66,20 @@ class Services {
       throw new Error(`Error deleting ${this.model}: ${error.message}`);
     }
   }
+
+  async getOneAndUpdate(one: object, data: object) {
+    try {
+      return await this.model.findOneAndUpdate(
+        one,
+        { $set: data },
+        {
+          new: true,
+        }
+      );
+    } catch (error: any) {
+      throw new Error(`Error updating one ${this.model}: ${error.message}`);
+    }
+  }
 }
 
 export default Services;

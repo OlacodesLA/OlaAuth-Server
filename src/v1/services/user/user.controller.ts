@@ -24,7 +24,7 @@ export const profile = (req: Request, res: Response) => {
   }
 
   // Here, you can access the user data
-  const { id, username, email } = user;
+  const { id, username, email, firstName, lastName, isVerified, admin } = user;
 
   clientResponse(res, 200, {
     success: true,
@@ -33,6 +33,10 @@ export const profile = (req: Request, res: Response) => {
       id,
       username,
       email,
+      firstName,
+      lastName,
+      isVerified,
+      admin,
     },
   });
 };

@@ -130,13 +130,25 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
+// Logout
+
+export const logout = async (res: Response) => {
+  clientCookieResponse(
+    res,
+    200,
+    "",
+    {
+      success: true,
+      message: "Successfully Logged Out",
+    },
+    true
+  );
+};
+
 // Verify
 
 export const verify = async (req: Request, res: Response) => {
-  const { email, verificationCode } = req.body as {
-    email: string;
-    verificationCode: string;
-  };
+  const { email, verificationCode } = req.body;
 
   try {
     // Find the user by their email
@@ -145,13 +157,30 @@ export const verify = async (req: Request, res: Response) => {
     // Check if the user exists and if the provided verification code matches
 
     if (!user) {
-      return clientResponse(res, 400, {
-        success: false,
-        message: "User not found.",
-      });
+      return clientResponse(
+        res,
+        400,
+        {
+          success: false,
+          message: "User not found.",
+        },
+        true
+      );
+    }
+    // Check if user is verified
+    if (user.isVerified === true) {
+      return clientResponse(
+        res,
+        200,
+        {
+          success: true,
+          message: "User already verified",
+        },
+        true
+      );
     }
 
-    if (user && user.verificationCode !== verificationCode) {
+    if (verificationCode !== user.verificationCode) {
       return clientResponse(
         res,
         400,
@@ -167,22 +196,35 @@ export const verify = async (req: Request, res: Response) => {
       user.verificationCodeExpiration &&
       user.verificationCodeExpiration < Date.now()
     ) {
-      return clientResponse(res, 400, {
-        success: false,
-        message: "Verification code has expired. Please request a new one.",
-      });
+      return clientResponse(
+        res,
+        400,
+        {
+          success: false,
+          message: "Verification code has expired. Please request a new one.",
+        },
+        true
+      );
     }
 
-    // Mark the user as verified and clear the verification code
-    user.isVerified = true;
-    user.verificationCode = null;
-    user.verificationCodeExpiration = null;
-    await user.save();
+    await userService.getOneAndUpdate(
+      { email },
+      {
+        isVerified: true,
+        verificationCode: null,
+        verificationCodeExpiration: null,
+      }
+    );
 
-    return clientResponse(res, 200, {
-      success: true,
-      message: "Account verified successfully.",
-    });
+    return clientResponse(
+      res,
+      200,
+      {
+        success: true,
+        message: "Account verified successfully.",
+      },
+      true
+    );
   } catch (error) {
     console.error("Error verifying user:", error);
     return clientResponse(res, 500, {
