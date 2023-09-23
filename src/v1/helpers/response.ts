@@ -2,8 +2,8 @@
 export const clientResponse = (
   res: any,
   status: number,
-
-  message: string | object
+  message: object | string,
+  toast?: any
 ) => {
   function isSuccess(code: string) {
     if (code.startsWith("2")) {
@@ -13,14 +13,20 @@ export const clientResponse = (
     }
   }
 
-  return res
-    .status(status)
-    .send(
-      typeof message === "string"
-        ? { success: isSuccess(String(status)), message: message }
-        : { success: isSuccess(String(status)), ...message }
-    )
-    .end();
+  const responseObj =
+    typeof message === "string"
+      ? {
+          success: isSuccess(String(status)),
+          message: message,
+          toast: toast ? toast : false,
+        }
+      : {
+          success: isSuccess(String(status)),
+          ...message,
+          toast: toast ? toast : false,
+        };
+
+  return res.status(status).send(responseObj).end();
 };
 
 // Response handler
@@ -28,7 +34,8 @@ export const clientCookieResponse = (
   res: any,
   status: number,
   cookie: string | undefined,
-  message: string | object
+  message: string | object,
+  toast: boolean
 ) => {
   function isSuccess(code: string) {
     if (code.startsWith("2")) {
@@ -43,8 +50,16 @@ export const clientCookieResponse = (
     .cookie("token", cookie)
     .send(
       typeof message === "string"
-        ? { success: isSuccess(String(status)), message: message }
-        : { success: isSuccess(String(status)), ...message }
+        ? {
+            success: isSuccess(String(status)),
+            message: message,
+            toast: toast ? toast : false,
+          }
+        : {
+            success: isSuccess(String(status)),
+            ...message,
+            toast: toast ? toast : false,
+          }
     )
     .end();
 };

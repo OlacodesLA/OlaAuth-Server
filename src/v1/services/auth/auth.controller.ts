@@ -19,12 +19,10 @@ const jwtSecret = config.SECRET as string;
 // Register
 
 export const register = async (req: Request, res: Response) => {
-  const { username, firstName, lastName, email, password } = req.body;
+  const { username, email, password } = req.body;
   try {
     const newUserData = {
       username,
-      firstName,
-      lastName,
       email,
       password: bcrypt.hashSync(password, bcryptSalt),
       admin: false,
@@ -35,10 +33,15 @@ export const register = async (req: Request, res: Response) => {
     const userUsernameExists = await userService.getOne({ username });
 
     if (userEmailExists || userUsernameExists) {
-      return clientResponse(res, 409, {
-        success: false,
-        message: "User with email already exists",
-      });
+      return clientResponse(
+        res,
+        409,
+        {
+          success: false,
+          message: "User with email already exists",
+        },
+        true
+      );
     }
     // Create new user
     const newUser = await userService.create(newUserData);
@@ -51,11 +54,16 @@ export const register = async (req: Request, res: Response) => {
     // Send the verification email
     await sendVerificationEmail(newUser.email, verificationCode);
 
-    return clientResponse(res, 201, {
-      success: true,
-      message: "Account created successfully",
-      data: newUser,
-    });
+    return clientResponse(
+      res,
+      201,
+      {
+        success: true,
+        message: "Account created successfully",
+        data: newUser,
+      },
+      true
+    );
   } catch (error) {
     clientResponse(res, 500, { success: false, message: error });
   }
@@ -71,10 +79,15 @@ export const login = async (req: Request, res: Response) => {
     const userExists = await userService.getOne({ email });
 
     if (!userExists) {
-      return clientResponse(res, 404, {
-        success: false,
-        message: "Account not found, Please register first",
-      });
+      return clientResponse(
+        res,
+        404,
+        {
+          success: false,
+          message: "Account not found, Please register first",
+        },
+        true
+      );
     }
     // Compare passwords and generate token for the logged in user
     const passwordOk = bcrypt.compareSync(password, userExists.password);
@@ -88,18 +101,29 @@ export const login = async (req: Request, res: Response) => {
           if (err)
             return clientResponse(res, 500, { success: false, message: err });
 
-          clientCookieResponse(res, 200, token, {
-            success: true,
-            message: "Successfully Logged In",
-            data: userExists,
-          });
+          clientCookieResponse(
+            res,
+            200,
+            token,
+            {
+              success: true,
+              message: "Successfully Logged In",
+              data: userExists,
+            },
+            true
+          );
         }
       );
     } else {
-      return clientResponse(res, 401, {
-        success: false,
-        message: "Password Incorrect",
-      });
+      return clientResponse(
+        res,
+        401,
+        {
+          success: false,
+          message: "Password Incorrect",
+        },
+        true
+      );
     }
   } catch (error) {
     clientResponse(res, 401, { success: false, message: error });
@@ -116,7 +140,7 @@ export const verify = async (req: Request, res: Response) => {
 
   try {
     // Find the user by their email
-    const user: any | null = await userService.getOne({ email });
+    const user = await userService.getOne({ email });
 
     // Check if the user exists and if the provided verification code matches
 
@@ -128,10 +152,15 @@ export const verify = async (req: Request, res: Response) => {
     }
 
     if (user && user.verificationCode !== verificationCode) {
-      return clientResponse(res, 400, {
-        success: false,
-        message: "Invalid verification code",
-      });
+      return clientResponse(
+        res,
+        400,
+        {
+          success: false,
+          message: "Invalid verification code",
+        },
+        true
+      );
     }
     // Check if the verification code has expired
     if (
@@ -163,6 +192,54 @@ export const verify = async (req: Request, res: Response) => {
   }
 };
 
+//Resend Verification Code
+
+export const resendCode = async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  try {
+    const user = await userService.getOne({ email });
+
+    if (!user) {
+      return clientResponse(
+        res,
+        400,
+        {
+          success: false,
+          message: "User not registered",
+        },
+        true
+      );
+    }
+
+    // Generate and save a new verification code
+    const verificationCode = await generateAndSaveVerificationCode(user._id);
+
+    // Send the verification email
+    await sendVerificationEmail(user.email, verificationCode);
+
+    return clientResponse(
+      res,
+      200,
+      {
+        success: true,
+        message: "Verification code sent",
+      },
+      true
+    );
+  } catch (error) {
+    return clientResponse(
+      res,
+      500,
+      {
+        success: false,
+        message: "Internal Server Error",
+      },
+      true
+    );
+  }
+};
+
 // Generate and save verification code
 
 async function generateAndSaveVerificationCode(userId: any) {
@@ -190,3 +267,27 @@ async function generateAndSaveVerificationCode(userId: any) {
     throw error;
   }
 }
+
+//Check If user exist
+export const checkIfUserExists = async (req: Request, res: Response) => {
+  const { username } = req.body;
+  // Update the data
+  try {
+    const userExists = await userService.getOne({ username });
+
+    if (!userExists) {
+      return clientResponse(res, 200, {
+        success: true,
+        message: "Username is available",
+      });
+    }
+
+    return clientResponse(res, 400, {
+      success: false,
+      message: "Username already exists",
+    });
+  } catch (error) {
+    console.error("Error fetching Username:", error);
+    throw error;
+  }
+};

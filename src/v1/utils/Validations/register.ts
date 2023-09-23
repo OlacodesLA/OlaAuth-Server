@@ -1,8 +1,9 @@
 import * as yup from "yup";
 
 export const registerSchema = yup.object({
-  firstName: yup.string().required("First Name cannot be emoty"),
-  lastName: yup.string().required("Last Name cannot be empty"),
+  username: yup.string().required("Username cannot be emoty"),
+  // firstName: yup.string().required("First Name cannot be empty"),
+  // lastName: yup.string().required("Last Name cannot be empty"),
   email: yup
     .string()
     .email("Please enter a valid email")

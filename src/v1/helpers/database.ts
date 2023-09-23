@@ -34,7 +34,7 @@ export default {
       process.on("SIGHUP", cleanup);
     } catch (error) {
       console.error(error, {
-        message: "mogo server didn't connect ",
+        message: "mongo server didn't connect ",
       });
       process.exit(1);
     }
