@@ -132,17 +132,25 @@ export const login = async (req: Request, res: Response) => {
 
 // Logout
 
-export const logout = async (res: Response) => {
-  clientCookieResponse(
-    res,
-    200,
-    "",
-    {
-      success: true,
-      message: "Successfully Logged Out",
-    },
-    true
-  );
+export const logout = async (req: Request, res: Response) => {
+  try {
+    clientCookieResponse(
+      res,
+      200,
+      "",
+      {
+        success: true,
+        message: "Successfully Logged Out",
+      },
+      true
+    );
+  } catch (error) {
+    console.error("Error logging out:", error);
+    return clientResponse(res, 500, {
+      success: false,
+      message: "Internal server error",
+    });
+  }
 };
 
 // Verify

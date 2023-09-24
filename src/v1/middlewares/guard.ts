@@ -1,9 +1,13 @@
 import { Response, Request, NextFunction } from "express";
-import jwt from "jsonwebtoken"; // Replace with your actual configuration
-import config from "../config"; // Import your user service or database functions here
+import jwt from "jsonwebtoken";
+import config from "../config";
 import User from "../services/user/user.model";
 import Services from "../helpers/model.helper";
 import { clientResponse } from "../helpers/response";
+
+interface UserData {
+  id: string;
+}
 
 const jwtSecret = config.SECRET as string;
 const userService = new Services(User);
@@ -18,41 +22,37 @@ const Guard = async (req: any, res: Response, next: NextFunction) => {
     });
   }
 
-  jwt.verify(token, jwtSecret, {}, async (err: any, userData: any) => {
-    if (err) {
+  try {
+    const userData = jwt.verify(token, jwtSecret) as UserData;
+
+    const user = await userService.getOne({ _id: userData.id });
+
+    if (!user) {
       return clientResponse(res, 401, {
         success: false,
-        message: "Unauthorized",
+        message: "User not found",
       });
     }
 
-    try {
-      const user = await userService.getOne({ _id: userData.id });
+    // Attach user data to the request for future route handlers
+    req.user = user;
 
-      if (!user) {
-        return clientResponse(
-          res,
-          401,
-          {
-            success: false,
-            message: "User not found",
-          },
-          true
-        );
-      }
+    next(); // Proceed to the protected route
+  } catch (error: any) {
+    console.error(error);
 
-      // Attach user data to the request for future route handlers
-      req.user = user;
-
-      next(); // Proceed to the protected route
-    } catch (error) {
-      console.log(error);
-      return clientResponse(res, 501, {
+    if (error.name === "TokenExpiredError") {
+      return clientResponse(res, 401, {
         success: false,
-        message: "Internal Server Error",
+        message: "Token has expired",
       });
     }
-  });
+
+    return clientResponse(res, 500, {
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
 };
 
 export default Guard;
