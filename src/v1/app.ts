@@ -17,7 +17,7 @@ app.disable("x-powered-by");
 const initMiddlewares = () => {
   app.use(
     cors({
-      origin: ["http://localhost:5173", "https://olaauth.netlify.app"],
+      origin: ["http://localhost:5173", "https://olaauth.vercel.app"],
       methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
       preflightContinue: false,
       optionsSuccessStatus: 204,
