@@ -1,3 +1,8 @@
+import config from "../config";
+
+const NODE_ENV = config.SECRET as string;
+const CLIENT_URL = config.SECRET as string;
+
 // Response handler
 export const clientResponse = (
   res: any,
@@ -47,7 +52,18 @@ export const clientCookieResponse = (
 
   return res
     .status(status)
-    .cookie("token", cookie)
+    .cookie(
+      "token",
+      cookie,
+      NODE_ENV === "production"
+        ? {
+            path: "/",
+            domain: CLIENT_URL,
+            httpOnly: true,
+            secure: true, // Use 'true' if your application uses HTTPS
+          }
+        : {}
+    )
     .send(
       typeof message === "string"
         ? {

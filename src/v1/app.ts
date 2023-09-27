@@ -15,6 +15,7 @@ app.disable("x-powered-by");
 
 // Middlewares
 const initMiddlewares = () => {
+  app.set("trust proxy", false);
   app.use(
     cors({
       origin: ["http://localhost:5173", "https://olaauth.vercel.app"],
