@@ -57,7 +57,6 @@ export const clientCookieResponse = (
       cookie,
       NODE_ENV === "production"
         ? {
-            path: "/",
             domain: CLIENT_URL,
             httpOnly: true,
             secure: true, // Use 'true' if your application uses HTTPS
