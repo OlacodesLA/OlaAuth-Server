@@ -57,9 +57,9 @@ export const clientCookieResponse = (
       cookie,
       NODE_ENV === "production"
         ? {
-            path: "/",
-            httpOnly: true,
-            secure: true, // Use 'true' if your application uses HTTPS
+            // path: "/",
+            // httpOnly: true,
+            // secure: true, // Use 'true' if your application uses HTTPS
             sameSite: "None", // Explicitly set SameSite to None for cross-origin cookies
             expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
           }
