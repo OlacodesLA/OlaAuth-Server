@@ -61,6 +61,7 @@ export const clientCookieResponse = (
             domain: CLIENT_URL,
             httpOnly: true,
             secure: true, // Use 'true' if your application uses HTTPS
+            sameSite: "None", // Explicitly set SameSite to None for cross-origin cookies
           }
         : {}
     )
