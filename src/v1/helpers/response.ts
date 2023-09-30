@@ -1,7 +1,7 @@
 import config from "../config";
 
 const NODE_ENV = config.NODE_ENV as string;
-const CLIENT_URL = config.CLIENT_URL as string;
+// const CLIENT_URL = config.CLIENT_URL as string;
 
 // Response handler
 export const clientResponse = (
@@ -57,7 +57,7 @@ export const clientCookieResponse = (
       cookie,
       NODE_ENV === "production"
         ? {
-            domain: CLIENT_URL,
+            path: "/",
             httpOnly: true,
             secure: true, // Use 'true' if your application uses HTTPS
             sameSite: "None", // Explicitly set SameSite to None for cross-origin cookies
