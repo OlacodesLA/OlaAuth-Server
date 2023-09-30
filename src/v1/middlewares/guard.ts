@@ -1,5 +1,5 @@
 import { Response, Request, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JsonWebTokenError } from "jsonwebtoken";
 import config from "../config";
 import User from "../services/user/user.model";
 import Services from "../helpers/model.helper";
@@ -41,7 +41,13 @@ const Guard = async (req: any, res: Response, next: NextFunction) => {
   } catch (error: any) {
     console.error(error);
 
-    if (error.name === "TokenExpiredError") {
+    if (error instanceof JsonWebTokenError) {
+      // Handle invalid token signature error
+      return clientResponse(res, 401, {
+        success: false,
+        message: "Invalid token signature",
+      });
+    } else if (error.name === "TokenExpiredError") {
       return clientResponse(res, 401, {
         success: false,
         message: "Token has expired",

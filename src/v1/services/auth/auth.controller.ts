@@ -100,7 +100,6 @@ export const login = async (req: Request, res: Response) => {
         (err, token) => {
           if (err)
             return clientResponse(res, 500, { success: false, message: err });
-
           clientCookieResponse(
             res,
             200,
@@ -112,7 +111,6 @@ export const login = async (req: Request, res: Response) => {
             },
             true
           );
-          
         }
       );
     } else {
