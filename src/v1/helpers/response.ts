@@ -1,6 +1,6 @@
 import config from "../config";
 
-const NODE_ENV = config.SECRET as string;
+const NODE_ENV = config.NODE_ENV as string;
 const CLIENT_URL = config.CLIENT_URL as string;
 
 // Response handler
@@ -49,16 +49,22 @@ export const clientCookieResponse = (
       return false;
     }
   }
-  console.log(CLIENT_URL);
+
   return res
     .status(status)
-    .cookie("token", cookie, {
-      path: "/",
-      domain: CLIENT_URL,
-      httpOnly: true,
-      secure: true, // Use 'true' if your application uses HTTPS
-      sameSite: "None", // Explicitly set SameSite to None for cross-origin cookies
-    })
+    .cookie(
+      "token",
+      cookie,
+      NODE_ENV === "production"
+        ? {
+            path: "/",
+            domain: CLIENT_URL,
+            httpOnly: true,
+            secure: true, // Use 'true' if your application uses HTTPS
+            sameSite: "None", // Explicitly set SameSite to None for cross-origin cookies
+          }
+        : {}
+    )
     .send(
       typeof message === "string"
         ? {
